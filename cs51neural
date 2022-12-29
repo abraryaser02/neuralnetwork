@@ -1,0 +1,63 @@
+import torch
+
+
+class NeuralNet:
+    def __init__(self, nInput, nHidden, nOutput, activation='relu'):
+        funs = {
+            "tanh": torch.nn.Tanh,
+            "sigmoid": torch.nn.Sigmoid,
+            "relu": torch.nn.ReLU
+        }
+        self.model = torch.nn.Sequential(
+            torch.nn.Linear(nInput, nHidden),
+            funs[activation](),
+            torch.nn.Linear(nHidden, nOutput),
+        )
+
+    def listify_params(self, idx):
+        ret = []
+        for param in list(self.model.modules())[idx].parameters():
+            ret.append(param.tolist())
+        return ret
+
+    def get_IH_weights(self):
+        """Returns the input-hidden weights as a list of lists."""
+        return self.listify_params(1)
+
+    def get_HO_weights(self):
+        """Returns the hidden-output weights as a list of lists."""
+        return self.listify_params(3)
+
+    def evaluate(self, inputs):
+        return self.model(torch.tensor(inputs, dtype=torch.float32)).tolist()
+
+    def test(self, data):
+        """Tests the neural net on a list of values.
+           Requires a list of input-output pairs.
+           Returns a list of triples:
+           (input, desired-output, actual-output)."""
+        results = []
+        for (x, y) in data:
+            results.append((x, y, self.evaluate(x)))
+        return results
+
+    def train(self, data,
+              learning_rate=0.01,
+              iterations=1000, print_interval=100):
+        """Carries out a training cycle on the neural net.
+           The training data must be a list of input-output pairs."""
+        loss_fn = torch.nn.MSELoss(reduction="sum")
+        x, y = zip(*data)
+        x = torch.tensor(x, dtype=torch.float32)
+        y = torch.tensor(y, dtype=torch.float32)
+        for i in range(iterations):
+            y_pred = self.model(x)
+            loss = loss_fn(y_pred, y)
+            if print_interval > 0 and i % print_interval == 0:
+                print("error %-14f" % loss)
+            self.model.zero_grad()
+            loss.backward()
+            with torch.no_grad():
+                for param in self.model.parameters():
+                    param.data -= learning_rate * param.grad
+
