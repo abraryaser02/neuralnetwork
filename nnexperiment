@@ -1,0 +1,46 @@
+from cs51neural import *
+
+
+def ex1():
+    xor = [([0, 0], [0]), ([0, 1], [1]), ([1, 0], [1]), ([1, 1], [0])]
+
+    # create a neural network
+    nn = NeuralNet(2, 3, 1)
+
+    # train the nn model
+    nn.train(xor)
+    print("evaluate:")
+    print(nn.evaluate([1, 0]))
+
+    nn.test(xor)
+    for triple in nn.test(xor):
+        (input, label, prediction) = triple  # unpack the triple
+        # remember outputs are lists, so we need to get the first item from the list
+        print(str(input) + "\t" + str(label[0]) + "\t" + str(prediction[0]))
+
+    nn.train(xor, iterations=1000, print_interval=200)
+    print("evaluate:")
+    print(nn.evaluate([1, 0]))
+
+"""
+With three hidden notes, it takes the neural network 600 tries to even get even get to an error of 0.04.
+The network needs to be trained a few times for the differences to be miniscule and for the error to 
+converge to zero. When I increased print_interval, the difference between the first error interval and the second 
+is 0.000405, which is huge compared to the rest of the error intervals.
+"""
+
+
+def ex2():
+    xor = [([0, 0], [0]), ([0, 1], [1]), ([1, 0], [1]), ([1, 1], [0])]
+
+    # create a neural network
+    nn = NeuralNet(2, 8, 1)
+
+    # train the nn model
+    nn.train(xor)
+    print("evaluate:")
+    print(nn.evaluate([1, 0]))
+
+    nn.train(xor, iterations=1000, print_interval=200)
+    print("evaluate:")
+    print(nn.evaluate([1, 0]))
